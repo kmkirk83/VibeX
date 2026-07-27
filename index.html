@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VIBEENGINE — AI-Powered SMS Proxy & Context Optimization Interpreter</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a30;
+      --panel-2: #1a2442;
+      --text: #e8ecff;
+      --muted: #9ba7d5;
+      --accent: #7c9cff;
+      --ok: #49d18a;
+      --warn: #f5c257;
+      --danger: #ff7b7b;
+      --border: #2a3763;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #121a34, #090e1d 45%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .wrap {
+      width: min(1200px, 96vw);
+      margin: 24px auto 40px;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.28);
+    }
+    .hero { grid-column: 1 / -1; }
+    .col-4 { grid-column: span 4; }
+    .col-8 { grid-column: span 8; }
+    .col-6 { grid-column: span 6; }
+    .col-12 { grid-column: 1 / -1; }
+    @media (max-width: 900px) {
+      .col-4, .col-8, .col-6 { grid-column: 1 / -1; }
+    }
+    h1, h2, h3 { margin: 0 0 8px; }
+    h1 { font-size: clamp(1.3rem, 2vw + 1rem, 2rem); }
+    p, small { color: var(--muted); }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin: 10px 0 6px;
+    }
+    input, textarea, select, button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 10px 12px;
+      font: inherit;
+    }
+    textarea { min-height: 120px; resize: vertical; }
+    button {
+      background: linear-gradient(135deg, #6f8eff, #7f63ff);
+      border: 0;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s transform ease, 0.2s opacity ease;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.7; cursor: wait; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: rgba(124,156,255,0.11);
+      color: #dce6ff;
+      font-size: 0.8rem;
+    }
+    .kpi {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(80px, 1fr));
+      gap: 10px;
+    }
+    .kpi > div {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .kpi strong { display: block; font-size: 1.1rem; color: white; }
+    .status { min-height: 24px; font-size: 0.85rem; margin-top: 8px; }
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .danger { color: var(--danger); }
+    pre {
+      margin: 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(6,10,24,0.7);
+      padding: 12px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .muted { color: var(--muted); }
+    .inline-actions { display: flex; gap: 8px; }
+    .inline-actions button { width: auto; padding: 9px 12px; }
+  </style>
+</head>
+<body>
+  <main class="wrap" aria-label="VIBEENGINE App">
+    <section class="card hero">
+      <h1>VIBEENGINE</h1>
+      <p>AI-Powered SMS Proxy & Context Optimization Interpreter with custom gateways, persistent profiles, premium modeling, and carrier length telemetry.</p>
+      <div class="chips" aria-label="Capabilities">
+        <span class="chip">Zero-backend static app</span>
+        <span class="chip">Custom API Gateway routing</span>
+        <span class="chip">Persistent profiles</span>
+        <span class="chip">Premium subscription cost modeling</span>
+        <span class="chip">Real-time SMS segment analysis</span>
+      </div>
+    </section>
+
+    <section class="card col-4" aria-labelledby="profile-title">
+      <h2 id="profile-title">Profile & Gateway</h2>
+      <label for="profileName">Profile name</label>
+      <input id="profileName" placeholder="Default Profile" />
+
+      <label for="gatewayUrl">Gateway endpoint (optional)</label>
+      <input id="gatewayUrl" placeholder="https://api.example.com/v1/chat/completions" />
+
+      <label for="gatewayToken">Gateway token (optional)</label>
+      <input id="gatewayToken" type="password" autocomplete="off" placeholder="****** stored locally" />
+
+      <label for="modelName">Model alias</label>
+      <input id="modelName" placeholder="vibengine-lite" />
+
+      <div class="inline-actions" style="margin-top:12px;">
+        <button id="saveProfileBtn" type="button">Save Profile</button>
+        <button id="clearProfileBtn" type="button">Clear</button>
+      </div>
+      <div id="profileStatus" class="status muted" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="card col-8" aria-labelledby="compose-title">
+      <h2 id="compose-title">Context Optimization Interpreter</h2>
+      <div class="row">
+        <div>
+          <label for="carrier">Carrier profile</label>
+          <select id="carrier">
+            <option value="generic">Generic Global</option>
+            <option value="us-shortcode">US Short Code</option>
+            <option value="eu-standard">EU Standard</option>
+            <option value="twilio-like">Twilio-like</option>
+          </select>
+        </div>
+        <div>
+          <label for="tone">Output tone</label>
+          <select id="tone">
+            <option value="concise">Concise</option>
+            <option value="friendly">Friendly</option>
+            <option value="professional">Professional</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="inputText">Source context / message objective</label>
+      <textarea id="inputText" placeholder="Paste rough intent or inbound context..."></textarea>
+
+      <div class="inline-actions" style="margin-top:12px;">
+        <button id="optimizeBtn" type="button">Optimize Message</button>
+        <button id="proxyBtn" type="button">Send via Gateway Proxy</button>
+      </div>
+      <div id="composeStatus" class="status muted" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="card col-6" aria-labelledby="metrics-title">
+      <h2 id="metrics-title">Real-time Carrier Length Metrics</h2>
+      <div class="kpi" id="kpi"></div>
+      <label for="optimizedText">Optimized SMS payload</label>
+      <textarea id="optimizedText" aria-label="Optimized SMS" placeholder="Generated output appears here..."></textarea>
+    </section>
+
+    <section class="card col-6" aria-labelledby="billing-title">
+      <h2 id="billing-title">Premium Subscription Modeling</h2>
+      <div class="row">
+        <div>
+          <label for="plan">Plan</label>
+          <select id="plan">
+            <option value="starter">Starter ($9)</option>
+            <option value="pro" selected>Pro ($29)</option>
+            <option value="scale">Scale ($99)</option>
+          </select>
+        </div>
+        <div>
+          <label for="monthlyMessages">Projected monthly SMS volume</label>
+          <input id="monthlyMessages" type="number" min="0" step="1" value="2000" />
+        </div>
+      </div>
+      <label for="segmentCost">Estimated segment cost ($)</label>
+      <input id="segmentCost" type="number" min="0" step="0.0001" value="0.0075" />
+      <div id="billingOutput" style="margin-top:10px;"></div>
+      <small>Model combines base plan, included segments, overage, and optimization savings from shorter messages.</small>
+    </section>
+
+    <section class="card col-12" aria-labelledby="proxy-title">
+      <h2 id="proxy-title">Proxy Response & Audit</h2>
+      <pre id="proxyOutput">No gateway request sent yet.</pre>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const el = (id) => document.getElementById(id);
+      const storageKey = 'vibeengine.profile.v1';
+
+      const plans = {
+        starter: { base: 9, included: 800 },
+        pro: { base: 29, included: 4000 },
+        scale: { base: 99, included: 16000 }
+      };
+
+      const carrierRules = {
+        generic: { max: 160, overhead: 0, label: 'Generic Global' },
+        'us-shortcode': { max: 153, overhead: 7, label: 'US Short Code (UDH reserve)' },
+        'eu-standard': { max: 160, overhead: 0, label: 'EU Standard' },
+        'twilio-like': { max: 153, overhead: 7, label: 'Twilio-like concatenated' }
+      };
+
+      const defaults = {
+        profileName: 'Default Profile',
+        gatewayUrl: '',
+        gatewayToken: '',
+        modelName: 'vibeengine-lite'
+      };
+
+      function saveProfile() {
+        const data = {
+          profileName: el('profileName').value.trim() || defaults.profileName,
+          gatewayUrl: el('gatewayUrl').value.trim(),
+          gatewayToken: el('gatewayToken').value,
+          modelName: el('modelName').value.trim() || defaults.modelName
+        };
+        localStorage.setItem(storageKey, JSON.stringify(data));
+        setStatus('profileStatus', 'Profile saved locally.', 'ok');
+      }
+
+      function loadProfile() {
+        const raw = localStorage.getItem(storageKey);
+        const data = raw ? { ...defaults, ...safeParse(raw) } : defaults;
+        el('profileName').value = data.profileName;
+        el('gatewayUrl').value = data.gatewayUrl;
+        el('gatewayToken').value = data.gatewayToken;
+        el('modelName').value = data.modelName;
+      }
+
+      function clearProfile() {
+        localStorage.removeItem(storageKey);
+        loadProfile();
+        setStatus('profileStatus', 'Profile cleared.', 'warn');
+      }
+
+      function safeParse(text) {
+        try { return JSON.parse(text) || {}; }
+        catch { return {}; }
+      }
+
+      function hasGsm7Chars(text) {
+        const gsm7 = /^[\x0A\x0D\x20-\x7E£¥èéùìòÇØøÅåΔ_ΦΓΛΩΠΨΣΘΞÆæÉ!"#¤%&'()*+,\-./0-9:;<=>?@A-ZÄÖÑÜ§¿a-zäöñüà^{}\\\[~\]|€]*$/;
+        return gsm7.test(text);
+      }
+
+      function computeSmsMetrics(message, carrierKey) {
+        const rule = carrierRules[carrierKey] || carrierRules.generic;
+        const encoding = hasGsm7Chars(message) ? 'GSM-7' : 'UCS-2';
+        const singleLimit = encoding === 'GSM-7' ? rule.max : 70;
+        const concatLimit = encoding === 'GSM-7' ? Math.max(rule.max - rule.overhead, 1) : 67;
+        const length = message.length;
+
+        let segments = 1;
+        if (length > singleLimit) {
+          segments = Math.ceil(length / concatLimit);
+        }
+
+        const remaining = length <= singleLimit
+          ? singleLimit - length
+          : concatLimit - (length % concatLimit || concatLimit);
+
+        return { encoding, singleLimit, concatLimit, length, segments, remaining, carrier: rule.label };
+      }
+
+      function optimizeText(input, tone) {
+        const cleaned = input
+          .replace(/\s+/g, ' ')
+          .replace(/\b(please note that|kindly be informed that|just wanted to let you know)\b/gi, '')
+          .replace(/\s+([,.!?;:])/g, '$1')
+          .trim();
+
+        const toneMap = {
+          concise: (t) => t,
+          friendly: (t) => `Hey! ${t}`,
+          professional: (t) => `Hello, ${t}`,
+          urgent: (t) => `Action needed: ${t}`
+        };
+
+        const transformed = (toneMap[tone] || toneMap.concise)(cleaned || 'No message provided.');
+        return transformed.length > 0 ? transformed : 'No message provided.';
+      }
+
+      function setStatus(id, message, cls = 'muted') {
+        const node = el(id);
+        node.textContent = message;
+        node.className = `status ${cls}`;
+      }
+
+      function renderMetrics() {
+        const message = el('optimizedText').value;
+        const carrier = el('carrier').value;
+        const m = computeSmsMetrics(message, carrier);
+        el('kpi').innerHTML = `
+          <div><small>Carrier</small><strong>${m.carrier}</strong></div>
+          <div><small>Encoding</small><strong>${m.encoding}</strong></div>
+          <div><small>Chars / Segments</small><strong>${m.length} / ${m.segments}</strong></div>
+          <div><small>Remaining</small><strong>${m.remaining}</strong></div>
+        `;
+        renderBilling(m.segments);
+      }
+
+      function renderBilling(currentSegments = 1) {
+        const planId = el('plan').value;
+        const monthlyMessages = Math.max(Number(el('monthlyMessages').value) || 0, 0);
+        const segmentCost = Math.max(Number(el('segmentCost').value) || 0, 0);
+        const plan = plans[planId] || plans.pro;
+
+        const projectedSegments = monthlyMessages * currentSegments;
+        const overage = Math.max(projectedSegments - plan.included, 0);
+        const monthlyTotal = plan.base + (overage * segmentCost);
+        const baselineSegments = monthlyMessages * 2;
+        const estimatedSavings = Math.max((baselineSegments - projectedSegments) * segmentCost, 0);
+
+        el('billingOutput').innerHTML = `
+          <div class="kpi">
+            <div><small>Base Plan</small><strong>$${plan.base.toFixed(2)}</strong></div>
+            <div><small>Included Segments</small><strong>${plan.included.toLocaleString()}</strong></div>
+            <div><small>Overage</small><strong>${overage.toLocaleString()}</strong></div>
+            <div><small>Monthly Total</small><strong>$${monthlyTotal.toFixed(2)}</strong></div>
+          </div>
+          <p class="muted" style="margin-top:8px;">Estimated optimization savings vs. 2-segment baseline: <strong style="color:var(--ok)">$${estimatedSavings.toFixed(2)}</strong></p>
+        `;
+      }
+
+      async function proxySend() {
+        const profile = {
+          gatewayUrl: el('gatewayUrl').value.trim(),
+          gatewayToken: el('gatewayToken').value,
+          modelName: el('modelName').value.trim() || defaults.modelName
+        };
+
+        if (!profile.gatewayUrl) {
+          setStatus('composeStatus', 'Gateway URL is missing. Configure Profile & Gateway first.', 'warn');
+          return;
+        }
+
+        const message = el('optimizedText').value.trim();
+        if (!message) {
+          setStatus('composeStatus', 'Nothing to send. Optimize or enter a message first.', 'warn');
+          return;
+        }
+
+        const payload = {
+          model: profile.modelName,
+          message,
+          metadata: {
+            profile: el('profileName').value.trim() || defaults.profileName,
+            carrier: el('carrier').value,
+            timestamp: new Date().toISOString()
+          }
+        };
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (profile.gatewayToken) headers.Authorization = 'Bearer ' + profile.gatewayToken;
+
+        setStatus('composeStatus', 'Sending via custom gateway...', 'muted');
+        el('proxyBtn').disabled = true;
+
+        try {
+          const res = await fetch(profile.gatewayUrl, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload)
+          });
+
+          const text = await res.text();
+          let parsed;
+          try { parsed = JSON.parse(text); } catch { parsed = text; }
+
+          el('proxyOutput').textContent = JSON.stringify({
+            ok: res.ok,
+            status: res.status,
+            response: parsed
+          }, null, 2);
+
+          setStatus('composeStatus', res.ok ? 'Gateway request completed.' : 'Gateway responded with an error status.', res.ok ? 'ok' : 'danger');
+        } catch (err) {
+          el('proxyOutput').textContent = JSON.stringify({ ok: false, error: err?.message || String(err) }, null, 2);
+          setStatus('composeStatus', 'Gateway request failed. Check URL/CORS/network.', 'danger');
+        } finally {
+          el('proxyBtn').disabled = false;
+        }
+      }
+
+      function optimizeNow() {
+        const input = el('inputText').value;
+        const tone = el('tone').value;
+        el('optimizedText').value = optimizeText(input, tone);
+        renderMetrics();
+        setStatus('composeStatus', 'Message optimized for SMS context.', 'ok');
+      }
+
+      function bindEvents() {
+        el('saveProfileBtn').addEventListener('click', saveProfile);
+        el('clearProfileBtn').addEventListener('click', clearProfile);
+        el('optimizeBtn').addEventListener('click', optimizeNow);
+        el('proxyBtn').addEventListener('click', proxySend);
+
+        ['optimizedText', 'carrier', 'plan', 'monthlyMessages', 'segmentCost'].forEach((id) => {
+          el(id).addEventListener('input', renderMetrics);
+          el(id).addEventListener('change', renderMetrics);
+        });
+      }
+
+      loadProfile();
+      bindEvents();
+      el('optimizedText').value = optimizeText('Reply confirming receipt and next step ETA.', 'professional');
+      renderMetrics();
+    })();
+  </script>
+</body>
+</html>
