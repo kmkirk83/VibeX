@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>VIBEENGINE — AI SMS Proxy & Context Optimizer</title>
+  <style>
+    :root {
+      --bg: #030206;
+      --panel: #080414;
+      --panel-2: #0d0620;
+      --border: #170c2e;
+      --text: #f5eefe;
+      --muted: #b8accd;
+      --pink: #ff2a85;
+      --purple: #d946ef;
+      --indigo: #6366f1;
+      --amber: #f59e0b;
+      --green: #22c55e;
+      --red: #ef4444;
+      --shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 0 30px rgba(99,102,241,0.12), 0 0 48px rgba(217,70,239,0.08);
+      --radius: 18px;
+      --perspective-accent: var(--indigo);
+      --perspective-glow: rgba(99,102,241,0.32);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body {
+      background:
+        radial-gradient(circle at top, rgba(217,70,239,0.16), transparent 30%),
+        radial-gradient(circle at 80% 10%, rgba(99,102,241,0.16), transparent 28%),
+        linear-gradient(180deg, #05020d 0%, #030206 100%);
+      padding: 24px 14px 56px;
+    }
+
+    a { color: inherit; }
+    button, input, textarea, select {
+      font: inherit;
+      color: inherit;
+    }
+
+    .app {
+      width: min(100%, 760px);
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+
+    .alert-ribbon {
+      position: sticky;
+      top: 8px;
+      z-index: 50;
+      display: none;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(255,42,133,0.12));
+      border: 1px solid rgba(245,158,11,0.45);
+      color: #ffe6b2;
+      box-shadow: 0 0 0 1px rgba(245,158,11,0.12), 0 10px 35px rgba(245,158,11,0.14);
+      backdrop-filter: blur(12px);
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(13,6,32,0.92), rgba(8,4,20,0.96));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .header {
+      padding: 18px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .header::after {
+      content: "";
+      position: absolute;
+      inset: auto -50px -90px auto;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(255,42,133,0.26), transparent 60%);
+      filter: blur(8px);
+      pointer-events: none;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, rgba(99,102,241,0.14), rgba(255,42,133,0.14));
+      border: 1px solid rgba(217,70,239,0.34);
+      box-shadow: 0 0 30px rgba(217,70,239,0.16);
+      flex: 0 0 auto;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: 0.12em;
+    }
+
+    .subtext {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .status-strip {
+      margin-top: 16px;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .status-pill {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      min-height: 64px;
+    }
+
+    .status-pill small,
+    .label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.76rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .status-pill strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 1rem;
+      word-break: break-word;
+    }
+
+    .nav {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      padding: 8px;
+    }
+
+    .tab-button {
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      border-radius: 14px;
+      padding: 12px 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .tab-button.active,
+    .tab-button:hover {
+      border-color: var(--perspective-accent);
+      box-shadow: 0 0 0 1px var(--perspective-glow), 0 0 22px var(--perspective-glow);
+      transform: translateY(-1px);
+    }
+
+    .panel {
+      display: none;
+      padding: 18px;
+      gap: 16px;
+    }
+
+    .panel.active {
+      display: grid;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .section-title h2,
+    .section-title h3,
+    .section-title h4,
+    .mini-card h4,
+    .tier-card h3,
+    .profile-row h4,
+    .output-card h4 {
+      margin: 0;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .grid,
+    .stats-grid,
+    .profile-form,
+    .inline-grid,
+    .setup-grid,
+    .premium-grid,
+    .token-grid,
+    .outputs-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid.two,
+    .inline-grid,
+    .setup-grid,
+    .premium-grid,
+    .token-grid,
+    .outputs-grid,
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 0.84rem;
+      color: #e8dffc;
+      font-weight: 600;
+    }
+
+    .input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      border-radius: 14px;
+      padding: 12px 14px;
+      outline: none;
+      min-height: 48px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    textarea {
+      min-height: 138px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    .input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--perspective-accent);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+    }
+
+    .toggle-wrap {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .toggle {
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+      text-align: center;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .toggle.active[data-mode="male"] {
+      border-color: var(--indigo);
+      box-shadow: 0 0 0 1px rgba(99,102,241,0.24), 0 0 24px rgba(99,102,241,0.2);
+      color: #d7dcff;
+    }
+
+    .toggle.active[data-mode="female"] {
+      border-color: var(--pink);
+      box-shadow: 0 0 0 1px rgba(255,42,133,0.24), 0 0 24px rgba(255,42,133,0.18);
+      color: #ffd4e6;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--indigo), var(--purple));
+      color: white;
+      box-shadow: 0 10px 30px rgba(99,102,241,0.22);
+      transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .btn.secondary {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: none;
+    }
+    .btn.pink { background: linear-gradient(135deg, var(--pink), var(--purple)); }
+    .btn.amber { background: linear-gradient(135deg, #f59e0b, #fb7185); }
+    .btn.green { background: linear-gradient(135deg, #10b981, #22c55e); }
+
+    .mini-card,
+    .tier-card,
+    .profile-row,
+    .output-card {
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .mini-card strong,
+    .metric {
+      display: block;
+      margin-top: 8px;
+      font-size: 1.14rem;
+    }
+
+    .status-badge,
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .pill.good { color: #baffcf; border-color: rgba(34,197,94,0.35); background: rgba(34,197,94,0.12); }
+    .pill.warn { color: #ffe2ab; border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.12); }
+    .pill.bad { color: #ffc2d3; border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.14); }
+
+    .log {
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.05);
+      color: #ddd1f6;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      min-height: 88px;
+    }
+
+    .profile-row {
+      display: grid;
+      gap: 12px;
+    }
+
+    .profile-meta {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .tier-card.active-tier {
+      border-color: var(--perspective-accent);
+      box-shadow: 0 0 0 1px var(--perspective-glow), 0 0 30px rgba(99,102,241,0.16);
+    }
+
+    .price {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+
+    .output-card {
+      display: grid;
+      gap: 12px;
+      border-color: rgba(255,255,255,0.08);
+    }
+
+    .output-card header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .output-card textarea {
+      min-height: 132px;
+    }
+
+    .tiny {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding: 4px 8px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (min-width: 640px) {
+      .status-strip,
+      .grid.two,
+      .setup-grid,
+      .premium-grid,
+      .token-grid,
+      .stats-grid,
+      .outputs-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .outputs-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div id="storageAlert" class="alert-ribbon card" role="status" aria-live="polite"></div>
+
+    <header class="header card">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="34" height="34" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="VIBEENGINE logo">
+            <defs>
+              <linearGradient id="veGlow" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#6366f1"/>
+                <stop offset="0.55" stop-color="#d946ef"/>
+                <stop offset="1" stop-color="#ff2a85"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 14h12l8 16 8-16h12L36 50h-8L12 14Z" stroke="url(#veGlow)" stroke-width="3.2" fill="rgba(255,255,255,0.02)"/>
+            <path d="M20 18h6l6 12 6-12h6L32 40 20 18Z" fill="url(#veGlow)" fill-opacity="0.25"/>
+            <circle cx="49" cy="18" r="4" fill="#ff2a85"/>
+          </svg>
+        </div>
+        <div>
+          <h1>VIBEENGINE</h1>
+          <p class="subtext">AI-powered SMS proxy, context optimizer, premium profile vault, and failover gateway controller in one static runtime.</p>
+        </div>
+      </div>
+      <div class="status-strip">
+        <div class="status-pill">
+          <small>Active Profile</small>
+          <strong id="activeProfileLabel">standard_default</strong>
+        </div>
+        <div class="status-pill">
+          <small>Current Network Route</small>
+          <strong id="routeLabel">Primary Gateway Ready</strong>
+        </div>
+      </div>
+    </header>
+
+    <nav class="nav card" aria-label="Primary navigation">
+      <button class="tab-button active" data-tab="matrix">Matrix</button>
+      <button class="tab-button" data-tab="profiles">Profiles</button>
+      <button class="tab-button" data-tab="premium">Premium</button>
+      <button class="tab-button" data-tab="setup">⚙️ Setup</button>
+    </nav>
+
+    <section id="panel-matrix" class="panel card active">
+      <div class="section-title">
+        <div>
+          <h2>Matrix Workspace</h2>
+          <p class="subtext">Tune intent, optimize message tone, dispatch inference, and protect GSM costs in real time.</p>
+        </div>
+        <span id="matrixTierBadge" class="status-badge">Lite Matrix Pass</span>
+      </div>
+
+      <div class="field">
+        <span class="label">Perspective Lock</span>
+        <div class="toggle-wrap" role="tablist" aria-label="Perspective mode">
+          <button id="maleToggle" class="toggle active" data-mode="male" aria-pressed="true">Male / Indigo</button>
+          <button id="femaleToggle" class="toggle" data-mode="female" aria-pressed="false">Female / Pink</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="incomingText">Incoming Communication Payload</label>
+        <textarea id="incomingText" placeholder="Paste the incoming SMS, DM, or contact thread here..."></textarea>
+      </div>
+
+      <div class="grid two">
+        <div class="field">
+          <label for="vibeScale">Vibe Scaling Factor</label>
+          <select id="vibeScale">
+            <option value="Romantic/Alluring">Romantic/Alluring</option>
+            <option value="Unhinged Tease">Unhinged Tease</option>
+            <option value="Raw/Direct">Raw/Direct</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="strategicTarget">Operational Strategic Target</label>
+          <select id="strategicTarget">
+            <option value="Meet Up Fast">Meet Up Fast</option>
+            <option value="Screen Out Bots">Screen Out Bots</option>
+            <option value="Paywall Deposit">Paywall Deposit</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="mini-card">
+          <small class="label">Credit Ledger</small>
+          <strong id="creditBalance">50</strong>
+          <span class="tiny">1 live inference consumes 1 credit</span>
+        </div>
+        <div class="mini-card">
+          <small class="label">Target Phone</small>
+          <strong id="targetPhonePreview">Not set</strong>
+          <span class="tiny">Configure in Setup for SMS deep links</span>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button id="generateBtn" class="btn">Generate Reply Matrix</button>
+        <button id="clearBtn" class="btn secondary">Clear Workspace</button>
+      </div>
+
+      <div>
+        <div class="section-title">
+          <div>
+            <h3>Gateway Processing Trace</h3>
+            <p class="subtext">Primary route, failover state, timeout interceptions, and parser output summaries.</p>
+          </div>
+          <span id="networkStatusBadge" class="pill warn">Idle</span>
+        </div>
+        <div id="processingLog" class="log" aria-live="polite">Awaiting input.</div>
+      </div>
+
+      <div>
+        <div class="section-title">
+          <div>
+            <h3>Optimized Reply Output</h3>
+            <p class="subtext">Tap any option to copy the message and open your SMS composer with carrier-aware segmentation metrics.</p>
+          </div>
+          <span class="pill good">Exactly 3 outputs</span>
+        </div>
+        <div id="outputsGrid" class="outputs-grid"></div>
+      </div>
+    </section>
+
+    <section id="panel-profiles" class="panel card">
+      <div class="section-title">
+        <div>
+          <h2>Profiles Repository</h2>
+          <p class="subtext">Freeze routing, prompt, and perspective state into reusable operator profiles.</p>
+        </div>
+        <span id="profileLimitBadge" class="pill warn">3 profile max on Lite</span>
+      </div>
+
+      <div class="profile-form">
+        <div class="field">
+          <label for="profileName">Profile Identifier</label>
+          <input id="profileName" class="input" type="text" maxlength="60" placeholder="ex: vip_fastlane_female" />
+        </div>
+        <div class="field">
+          <label for="customDirective">Custom Pre-Prompt Directives Override</label>
+          <textarea id="customDirective" placeholder="ex: use heavy text abbreviations and mention deposits before meeting"></textarea>
+          <span id="directiveAccessHint" class="tiny">Upgrade to Pro or Elite to unlock custom pre-prompts.</span>
+        </div>
+        <div class="button-row">
+          <button id="saveProfileBtn" class="btn pink">Freeze Current Profile</button>
+          <button id="resetProfilesBtn" class="btn secondary">Reset to Default Profile</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">
+          <div>
+            <h3>Saved Profiles</h3>
+            <p class="subtext">Load, delete, and inspect active route bindings instantly from local storage.</p>
+          </div>
+          <span id="profileCountBadge" class="pill">1 profile saved</span>
+        </div>
+        <div id="profilesList" class="grid"></div>
+      </div>
+    </section>
+
+    <section id="panel-premium" class="panel card">
+      <div class="section-title">
+        <div>
+          <h2>Premium Access Gates</h2>
+          <p class="subtext">Simulated subscription unlocks adjust profile limits, directives access, and bypass routing behavior.</p>
+        </div>
+        <span id="activeTierSummary" class="pill good">Current Tier: Lite Matrix Pass</span>
+      </div>
+
+      <div class="premium-grid">
+        <article class="tier-card" data-tier="lite">
+          <h3>Lite Matrix Pass</h3>
+          <div class="price">$9<span class="tiny">/mo</span></div>
+          <p class="subtext">3 profile cap, no custom pre-prompts, clean baseline generation pipeline.</p>
+          <button class="btn secondary tier-btn" data-tier="lite">Select Lite</button>
+        </article>
+        <article class="tier-card" data-tier="pro">
+          <h3>Pro Traffic Operator</h3>
+          <div class="price">$29<span class="tiny">/mo</span></div>
+          <p class="subtext">Unlimited profiles and unlocked pre-prompt injection modules for high-control tuning.</p>
+          <button class="btn tier-btn" data-tier="pro">Upgrade to Pro</button>
+        </article>
+        <article class="tier-card" data-tier="elite">
+          <h3>Elite Syndicate</h3>
+          <div class="price">$79<span class="tiny">/mo</span></div>
+          <p class="subtext">Top-tier authorization with aggressive low-latency bypass routing preferences.</p>
+          <button class="btn pink tier-btn" data-tier="elite">Go Elite</button>
+        </article>
+      </div>
+
+      <div>
+        <div class="section-title">
+          <div>
+            <h3>Credit Refill Matrix</h3>
+            <p class="subtext">Inject simulation credits into the local ledger to keep live optimization flowing.</p>
+          </div>
+          <span class="pill">Mock checkout enabled</span>
+        </div>
+        <div class="token-grid">
+          <article class="tier-card">
+            <h3>50 Credits</h3>
+            <div class="price">$4.99</div>
+            <button class="btn green refill-btn" data-credits="50" data-price="4.99">Purchase 50</button>
+          </article>
+          <article class="tier-card">
+            <h3>150 Credits</h3>
+            <div class="price">$9.99</div>
+            <button class="btn green refill-btn" data-credits="150" data-price="9.99">Purchase 150</button>
+          </article>
+          <article class="tier-card">
+            <h3>500 Credits</h3>
+            <div class="price">$24.99</div>
+            <button class="btn green refill-btn" data-credits="500" data-price="24.99">Purchase 500</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-setup" class="panel card">
+      <div class="section-title">
+        <div>
+          <h2>Setup Core Matrix</h2>
+          <p class="subtext">Configure primary and failover gateway routes, model IDs, destination phone numbers, and local backup controls.</p>
+        </div>
+        <span id="failoverBadge" class="pill warn">Failover armed</span>
+      </div>
+
+      <div class="setup-grid">
+        <div class="mini-card">
+          <h4>Primary Gateway</h4>
+          <div class="grid">
+            <div class="field">
+              <label for="primaryUrl">Primary API Base URL</label>
+              <input id="primaryUrl" class="input" type="url" placeholder="https://openrouter.ai" />
+            </div>
+            <div class="field">
+              <label for="primaryKey">Primary Secret API Key</label>
+              <input id="primaryKey" class="input" type="password" placeholder="sk-or-v1..." autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="primaryModel">Primary Model ID</label>
+              <input id="primaryModel" class="input" type="text" placeholder="meta-llama/llama-3.3-70b-instruct:free" />
+            </div>
+          </div>
+        </div>
+        <div class="mini-card">
+          <h4>Failover Gateway</h4>
+          <div class="grid">
+            <div class="field">
+              <label for="fallbackUrl">Fallback API Base URL</label>
+              <input id="fallbackUrl" class="input" type="url" placeholder="https://api.openai.com" />
+            </div>
+            <div class="field">
+              <label for="fallbackKey">Fallback Secret API Key</label>
+              <input id="fallbackKey" class="input" type="password" placeholder="sk-..." autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="fallbackModel">Fallback Model ID</label>
+              <input id="fallbackModel" class="input" type="text" placeholder="gpt-4o-mini" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid two">
+        <div class="field">
+          <label for="targetPhone">Target Phone Destination</label>
+          <input id="targetPhone" class="input" type="tel" placeholder="+15555551212" />
+        </div>
+        <div class="field">
+          <label for="requestTimeout">Request Timeout (ms)</label>
+          <input id="requestTimeout" class="input" type="number" min="1000" step="500" placeholder="12000" />
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button id="saveSetupBtn" class="btn">Save Network Settings</button>
+        <button id="exportBtn" class="btn secondary">Export Configuration JSON</button>
+        <button id="importBtn" class="btn secondary">Import Backup Configuration JSON</button>
+        <input id="importFile" type="file" accept="application/json" class="hidden" />
+      </div>
+
+      <div class="log" id="setupLog">Primary defaults loaded. Export after major changes to preserve local state.</div>
+    </section>
+
+    <p class="footer-note">Static client runtime only — store backups after edits to avoid browser-storage loss.</p>
+  </div>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = 'vibeengine_state_v1';
+      const OUTPUT_LABELS = ['The Hook', 'The Escalation', 'The No-Filter'];
+      const TIERS = {
+        lite: {
+          id: 'lite',
+          name: 'Lite Matrix Pass',
+          price: 9,
+          maxProfiles: 3,
+          allowCustomDirectives: false,
+          creditsSeed: 50,
+          eliteRouting: false
+        },
+        pro: {
+          id: 'pro',
+          name: 'Pro Traffic Operator',
+          price: 29,
+          maxProfiles: Number.POSITIVE_INFINITY,
+          allowCustomDirectives: true,
+          creditsSeed: 50,
+          eliteRouting: false
+        },
+        elite: {
+          id: 'elite',
+          name: 'Elite Syndicate',
+          price: 79,
+          maxProfiles: Number.POSITIVE_INFINITY,
+          allowCustomDirectives: true,
+          creditsSeed: 50,
+          eliteRouting: true
+        }
+      };
+
+      const defaultState = {
+        activeTab: 'matrix',
+        currentProfile: 'standard_default',
+        dirty: false,
+        lastExportAt: '',
+        perspective: 'male',
+        vibeScale: 'Romantic/Alluring',
+        strategicTarget: 'Meet Up Fast',
+        incomingText: '',
+        customDirectiveDraft: '',
+        processingLog: 'Awaiting input.',
+        outputs: [],
+        ledgerCredits: 50,
+        premiumTier: 'lite',
+        network: {
+          primaryUrl: 'https://openrouter.ai',
+          primaryKey: '',
+          primaryModel: 'meta-llama/llama-3.3-70b-instruct:free',
+          fallbackUrl: 'https://api.openai.com',
+          fallbackKey: '',
+          fallbackModel: 'gpt-4o-mini',
+          requestTimeout: 12000,
+          targetPhone: ''
+        },
+        notifications: {
+          routeStatus: 'Primary Gateway Ready',
+          failoverArmed: true,
+          processingState: 'Idle',
+          setupLog: 'Primary defaults loaded. Export after major changes to preserve local state.'
+        },
+        profiles: [
+          {
+            id: 'standard_default',
+            name: 'standard_default',
+            perspective: 'male',
+            vibeScale: 'Romantic/Alluring',
+            strategicTarget: 'Meet Up Fast',
+            customDirective: '',
+            network: {
+              primaryUrl: 'https://openrouter.ai',
+              primaryModel: 'meta-llama/llama-3.3-70b-instruct:free',
+              fallbackUrl: 'https://api.openai.com',
+              fallbackModel: 'gpt-4o-mini',
+              targetPhone: ''
+            },
+            savedAt: new Date().toISOString()
+          }
+        ]
+      };
+
+      const els = {
+        storageAlert: document.getElementById('storageAlert'),
+        activeProfileLabel: document.getElementById('activeProfileLabel'),
+        routeLabel: document.getElementById('routeLabel'),
+        networkStatusBadge: document.getElementById('networkStatusBadge'),
+        failoverBadge: document.getElementById('failoverBadge'),
+        matrixTierBadge: document.getElementById('matrixTierBadge'),
+        targetPhonePreview: document.getElementById('targetPhonePreview'),
+        creditBalance: document.getElementById('creditBalance'),
+        processingLog: document.getElementById('processingLog'),
+        outputsGrid: document.getElementById('outputsGrid'),
+        setupLog: document.getElementById('setupLog'),
+        activeTierSummary: document.getElementById('activeTierSummary'),
+        profileLimitBadge: document.getElementById('profileLimitBadge'),
+        profileCountBadge: document.getElementById('profileCountBadge'),
+        profilesList: document.getElementById('profilesList'),
+        directiveAccessHint: document.getElementById('directiveAccessHint'),
+        customDirective: document.getElementById('customDirective'),
+        profileName: document.getElementById('profileName'),
+        incomingText: document.getElementById('incomingText'),
+        vibeScale: document.getElementById('vibeScale'),
+        strategicTarget: document.getElementById('strategicTarget'),
+        primaryUrl: document.getElementById('primaryUrl'),
+        primaryKey: document.getElementById('primaryKey'),
+        primaryModel: document.getElementById('primaryModel'),
+        fallbackUrl: document.getElementById('fallbackUrl'),
+        fallbackKey: document.getElementById('fallbackKey'),
+        fallbackModel: document.getElementById('fallbackModel'),
+        requestTimeout: document.getElementById('requestTimeout'),
+        targetPhone: document.getElementById('targetPhone'),
+        saveProfileBtn: document.getElementById('saveProfileBtn'),
+        resetProfilesBtn: document.getElementById('resetProfilesBtn'),
+        generateBtn: document.getElementById('generateBtn'),
+        clearBtn: document.getElementById('clearBtn'),
+        saveSetupBtn: document.getElementById('saveSetupBtn'),
+        exportBtn: document.getElementById('exportBtn'),
+        importBtn: document.getElementById('importBtn'),
+        importFile: document.getElementById('importFile'),
+        tabButtons: Array.from(document.querySelectorAll('.tab-button')),
+        panels: Array.from(document.querySelectorAll('.panel')),
+        maleToggle: document.getElementById('maleToggle'),
+        femaleToggle: document.getElementById('femaleToggle'),
+        tierCards: Array.from(document.querySelectorAll('.tier-card[data-tier]')),
+        tierButtons: Array.from(document.querySelectorAll('.tier-btn')),
+        refillButtons: Array.from(document.querySelectorAll('.refill-btn'))
+      };
+
+      let state = loadState();
+
+      function deepClone(value) {
+        return JSON.parse(JSON.stringify(value));
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return deepClone(defaultState);
+          const parsed = JSON.parse(raw);
+          return mergeState(defaultState, parsed);
+        } catch {
+          return deepClone(defaultState);
+        }
+      }
+
+      function mergeState(base, incoming) {
+        const merged = deepClone(base);
+        if (!incoming || typeof incoming !== 'object') return merged;
+        merged.activeTab = typeof incoming.activeTab === 'string' ? incoming.activeTab : base.activeTab;
+        merged.currentProfile = typeof incoming.currentProfile === 'string' ? incoming.currentProfile : base.currentProfile;
+        merged.dirty = Boolean(incoming.dirty);
+        merged.lastExportAt = typeof incoming.lastExportAt === 'string' ? incoming.lastExportAt : base.lastExportAt;
+        merged.perspective = incoming.perspective === 'female' ? 'female' : 'male';
+        merged.vibeScale = typeof incoming.vibeScale === 'string' ? incoming.vibeScale : base.vibeScale;
+        merged.strategicTarget = typeof incoming.strategicTarget === 'string' ? incoming.strategicTarget : base.strategicTarget;
+        merged.incomingText = typeof incoming.incomingText === 'string' ? incoming.incomingText : base.incomingText;
+        merged.customDirectiveDraft = typeof incoming.customDirectiveDraft === 'string' ? incoming.customDirectiveDraft : base.customDirectiveDraft;
+        merged.processingLog = typeof incoming.processingLog === 'string' ? incoming.processingLog : base.processingLog;
+        merged.outputs = Array.isArray(incoming.outputs) ? incoming.outputs.slice(0, 3) : [];
+        merged.ledgerCredits = Number.isFinite(Number(incoming.ledgerCredits)) ? Math.max(0, Number(incoming.ledgerCredits)) : base.ledgerCredits;
+        merged.premiumTier = TIERS[incoming.premiumTier] ? incoming.premiumTier : base.premiumTier;
+        merged.network = { ...deepClone(base.network), ...(incoming.network || {}) };
+        merged.network.requestTimeout = Number.isFinite(Number(merged.network.requestTimeout)) ? Math.max(1000, Number(merged.network.requestTimeout)) : base.network.requestTimeout;
+        merged.notifications = { ...deepClone(base.notifications), ...(incoming.notifications || {}) };
+        merged.profiles = Array.isArray(incoming.profiles) && incoming.profiles.length ? incoming.profiles.map(normalizeProfile) : deepClone(base.profiles);
+        return merged;
+      }
+
+      function normalizeProfile(profile) {
+        const safeName = typeof profile?.name === 'string' && profile.name.trim() ? profile.name.trim() : 'unnamed_profile';
+        return {
+          id: typeof profile?.id === 'string' && profile.id.trim() ? profile.id.trim() : safeName,
+          name: safeName,
+          perspective: profile?.perspective === 'female' ? 'female' : 'male',
+          vibeScale: typeof profile?.vibeScale === 'string' ? profile.vibeScale : defaultState.vibeScale,
+          strategicTarget: typeof profile?.strategicTarget === 'string' ? profile.strategicTarget : defaultState.strategicTarget,
+          customDirective: typeof profile?.customDirective === 'string' ? profile.customDirective : '',
+          network: {
+            primaryUrl: typeof profile?.network?.primaryUrl === 'string' ? profile.network.primaryUrl : defaultState.network.primaryUrl,
+            primaryModel: typeof profile?.network?.primaryModel === 'string' ? profile.network.primaryModel : defaultState.network.primaryModel,
+            fallbackUrl: typeof profile?.network?.fallbackUrl === 'string' ? profile.network.fallbackUrl : defaultState.network.fallbackUrl,
+            fallbackModel: typeof profile?.network?.fallbackModel === 'string' ? profile.network.fallbackModel : defaultState.network.fallbackModel,
+            targetPhone: typeof profile?.network?.targetPhone === 'string' ? profile.network.targetPhone : ''
+          },
+          savedAt: typeof profile?.savedAt === 'string' ? profile.savedAt : new Date().toISOString()
+        };
+      }
+
+      function persistState(markDirty = false) {
+        if (markDirty) state.dirty = true;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        renderAll();
+      }
+
+      function setPerspective(mode) {
+        state.perspective = mode === 'female' ? 'female' : 'male';
+        const root = document.documentElement;
+        const isFemale = state.perspective === 'female';
+        root.style.setProperty('--perspective-accent', isFemale ? 'var(--pink)' : 'var(--indigo)');
+        root.style.setProperty('--perspective-glow', isFemale ? 'rgba(255,42,133,0.32)' : 'rgba(99,102,241,0.32)');
+        els.maleToggle.classList.toggle('active', !isFemale);
+        els.femaleToggle.classList.toggle('active', isFemale);
+        els.maleToggle.setAttribute('aria-pressed', String(!isFemale));
+        els.femaleToggle.setAttribute('aria-pressed', String(isFemale));
+      }
+
+      function showToast(message, type = 'good') {
+        els.storageAlert.textContent = message;
+        els.storageAlert.style.display = 'block';
+        els.storageAlert.style.borderColor = type === 'warn' ? 'rgba(245,158,11,0.45)' : type === 'bad' ? 'rgba(239,68,68,0.45)' : 'rgba(34,197,94,0.45)';
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => {
+          if (state.dirty) {
+            renderStorageAlert();
+            return;
+          }
+          els.storageAlert.style.display = 'none';
+        }, 2800);
+      }
+
+      function renderStorageAlert() {
+        if (state.dirty) {
+          const when = state.lastExportAt ? ` Last export: ${new Date(state.lastExportAt).toLocaleString()}.` : '';
+          els.storageAlert.textContent = `Configuration changed. Export a JSON backup to avoid local storage loss.${when}`;
+          els.storageAlert.style.display = 'block';
+          els.storageAlert.style.borderColor = 'rgba(245,158,11,0.45)';
+        } else if (!showToast.timer) {
+          els.storageAlert.style.display = 'none';
+        }
+      }
+
+      function renderTabs() {
+        els.tabButtons.forEach((button) => {
+          const active = button.dataset.tab === state.activeTab;
+          button.classList.toggle('active', active);
+        });
+        els.panels.forEach((panel) => {
+          panel.classList.toggle('active', panel.id === `panel-${state.activeTab}`);
+        });
+      }
+
+      function renderPremium() {
+        const tier = TIERS[state.premiumTier];
+        els.activeTierSummary.textContent = `Current Tier: ${tier.name}`;
+        els.matrixTierBadge.textContent = tier.name;
+        els.profileLimitBadge.textContent = Number.isFinite(tier.maxProfiles) ? `${tier.maxProfiles} profile max on Lite` : 'Unlimited profile indexing active';
+        els.directiveAccessHint.textContent = tier.allowCustomDirectives ? 'Custom directive overrides are active for this account.' : 'Upgrade to Pro or Elite to unlock custom pre-prompts.';
+        els.customDirective.disabled = !tier.allowCustomDirectives;
+        els.customDirective.value = tier.allowCustomDirectives ? state.customDirectiveDraft : '';
+        if (!tier.allowCustomDirectives && state.customDirectiveDraft) {
+          state.customDirectiveDraft = '';
+          els.customDirective.value = '';
+        }
+        els.tierCards.forEach((card) => {
+          card.classList.toggle('active-tier', card.dataset.tier === state.premiumTier);
+        });
+      }
+
+      function renderProfiles() {
+        els.profilesList.innerHTML = '';
+        const count = state.profiles.length;
+        els.profileCountBadge.textContent = `${count} profile${count === 1 ? '' : 's'} saved`;
+        const tier = TIERS[state.premiumTier];
+        state.profiles.forEach((profile) => {
+          const article = document.createElement('article');
+          article.className = 'profile-row';
+          const isActive = profile.id === state.currentProfile;
+          article.innerHTML = `
+            <div class="section-title">
+              <div>
+                <h4>${escapeHtml(profile.name)}</h4>
+                <div class="profile-meta">
+                  <span>${profile.perspective === 'female' ? 'Female / Pink' : 'Male / Indigo'} • ${escapeHtml(profile.vibeScale)} • ${escapeHtml(profile.strategicTarget)}</span>
+                  <span>Primary: ${escapeHtml(profile.network.primaryModel)} • Fallback: ${escapeHtml(profile.network.fallbackModel)}</span>
+                  <span>Saved: ${new Date(profile.savedAt).toLocaleString()}</span>
+                </div>
+              </div>
+              <span class="pill ${isActive ? 'good' : ''}">${isActive ? 'Locked Active' : 'Stored'}</span>
+            </div>
+            <div class="tiny">${profile.customDirective ? escapeHtml(profile.customDirective) : (tier.allowCustomDirectives ? 'No custom directive override stored.' : 'Custom directives unavailable on current tier.')}</div>
+            <div class="button-row">
+              <button class="btn secondary" data-action="load" data-id="${escapeHtml(profile.id)}">Load Profile</button>
+              <button class="btn secondary" data-action="delete" data-id="${escapeHtml(profile.id)}" ${profile.id === 'standard_default' ? 'disabled' : ''}>Delete</button>
+            </div>
+          `;
+          els.profilesList.appendChild(article);
+        });
+      }
+
+      function renderSetup() {
+        els.primaryUrl.value = state.network.primaryUrl;
+        els.primaryKey.value = state.network.primaryKey;
+        els.primaryModel.value = state.network.primaryModel;
+        els.fallbackUrl.value = state.network.fallbackUrl;
+        els.fallbackKey.value = state.network.fallbackKey;
+        els.fallbackModel.value = state.network.fallbackModel;
+        els.requestTimeout.value = String(state.network.requestTimeout);
+        els.targetPhone.value = state.network.targetPhone;
+        els.setupLog.textContent = state.notifications.setupLog;
+      }
+
+      function renderMatrix() {
+        els.activeProfileLabel.textContent = state.currentProfile;
+        els.routeLabel.textContent = state.notifications.routeStatus;
+        els.networkStatusBadge.textContent = state.notifications.processingState;
+        els.failoverBadge.textContent = state.notifications.failoverArmed ? 'Failover armed' : 'Single route only';
+        els.targetPhonePreview.textContent = state.network.targetPhone || 'Not set';
+        els.creditBalance.textContent = String(state.ledgerCredits);
+        els.processingLog.textContent = state.processingLog || 'Awaiting input.';
+        els.incomingText.value = state.incomingText;
+        els.vibeScale.value = state.vibeScale;
+        els.strategicTarget.value = state.strategicTarget;
+        renderOutputs();
+      }
+
+      function gsmMetrics(text) {
+        const content = text || '';
+        const length = content.length;
+        const segments = length === 0 ? 0 : Math.ceil(length / 160);
+        const remaining = length === 0 ? 160 : 160 - (length % 160 || 160);
+        return { length, segments, remaining };
+      }
+
+      function renderOutputs() {
+        els.outputsGrid.innerHTML = '';
+        const outputs = Array.isArray(state.outputs) && state.outputs.length === 3 ? state.outputs : OUTPUT_LABELS.map((label) => ({ label, text: '' }));
+        outputs.forEach((item, index) => {
+          const metrics = gsmMetrics(item.text);
+          const article = document.createElement('article');
+          article.className = 'output-card';
+          article.innerHTML = `
+            <header>
+              <div>
+                <h4>${escapeHtml(item.label || OUTPUT_LABELS[index])}</h4>
+                <div class="tiny">${metrics.length} chars • ${metrics.segments} segment${metrics.segments === 1 ? '' : 's'} • ${metrics.remaining} chars until next split</div>
+              </div>
+              <span class="pill ${metrics.segments > 2 ? 'warn' : 'good'}">GSM ${metrics.segments || 0}</span>
+            </header>
+            <textarea readonly aria-label="${escapeHtml(item.label || OUTPUT_LABELS[index])} output">${escapeHtml(item.text || '')}</textarea>
+            <div class="button-row">
+              <button class="btn" data-output-index="${index}" ${item.text ? '' : 'disabled'}>Copy + Open SMS</button>
+            </div>
+          `;
+          els.outputsGrid.appendChild(article);
+        });
+      }
+
+      function renderAll() {
+        setPerspective(state.perspective);
+        renderTabs();
+        renderPremium();
+        renderProfiles();
+        renderSetup();
+        renderMatrix();
+        renderStorageAlert();
+      }
+
+      function setTab(tab) {
+        state.activeTab = tab;
+        persistState(false);
+      }
+
+      function markNetworkState(message, badgeType, routeLabel) {
+        state.processingLog = message;
+        state.notifications.processingState = badgeType;
+        if (routeLabel) state.notifications.routeStatus = routeLabel;
+        renderMatrix();
+      }
+
+      function sanitizePhone(value) {
+        return String(value || '').replace(/[^\d+]/g, '');
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function getCurrentDirective() {
+        const tier = TIERS[state.premiumTier];
+        return tier.allowCustomDirectives ? state.customDirectiveDraft.trim() : '';
+      }
+
+      function buildPromptPayload() {
+        const perspectiveText = state.perspective === 'female'
+          ? 'Speak from a confident feminine perspective with playful tension.'
+          : 'Speak from a confident masculine perspective with smooth direct energy.';
+        const directive = getCurrentDirective();
+        return [
+          'Return exact JSON only with an array named responses containing exactly 3 objects.',
+          'Each object must contain label and text keys.',
+          'Use labels exactly: The Hook, The Escalation, The No-Filter.',
+          'No commentary, no markdown, no trailing text.',
+          perspectiveText,
+          `Vibe scale: ${state.vibeScale}.`,
+          `Strategic target: ${state.strategicTarget}.`,
+          directive ? `Custom directive override: ${directive}.` : '',
+          `Incoming message: ${state.incomingText.trim()}`
+        ].filter(Boolean).join(' ');
+      }
+
+      async function fetchWithTimeout(url, options, timeoutMs) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const response = await fetch(url, { ...options, signal: controller.signal });
+          clearTimeout(timer);
+          return response;
+        } catch (error) {
+          clearTimeout(timer);
+          throw error;
+        }
+      }
+
+      function buildEndpointConfig(routeName) {
+        if (routeName === 'primary') {
+          return {
+            routeName: 'Primary Gateway',
+            baseUrl: state.network.primaryUrl.trim(),
+            apiKey: state.network.primaryKey.trim(),
+            model: state.network.primaryModel.trim(),
+            adapter: detectAdapter(state.network.primaryUrl.trim())
+          };
+        }
+        return {
+          routeName: 'Failover Gateway',
+          baseUrl: state.network.fallbackUrl.trim(),
+          apiKey: state.network.fallbackKey.trim(),
+          model: state.network.fallbackModel.trim(),
+          adapter: detectAdapter(state.network.fallbackUrl.trim())
+        };
+      }
+
+      function detectAdapter(url) {
+        const lower = url.toLowerCase();
+        if (lower.includes('openrouter.ai')) return 'openrouter';
+        if (lower.includes('api.openai.com')) return 'openai';
+        return 'generic';
+      }
+
+      function buildRequest(endpoint) {
+        const prompt = buildPromptPayload();
+        if (endpoint.adapter === 'openrouter') {
+          return {
+            url: endpoint.baseUrl.replace(/\/$/, '') + '/api/v1/chat/completions',
+            options: {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(endpoint.apiKey ? { Authorization: 'Bearer ' + endpoint.apiKey } : {}),
+                'HTTP-Referer': location.href,
+                'X-Title': 'VIBEENGINE'
+              },
+              body: JSON.stringify({
+                model: endpoint.model,
+                messages: [
+                  { role: 'system', content: 'You are an SMS optimization engine.' },
+                  { role: 'user', content: prompt }
+                ],
+                temperature: 0.9
+              })
+            }
+          };
+        }
+        if (endpoint.adapter === 'openai') {
+          return {
+            url: endpoint.baseUrl.replace(/\/$/, '') + '/v1/chat/completions',
+            options: {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(endpoint.apiKey ? { Authorization: 'Bearer ' + endpoint.apiKey } : {})
+              },
+              body: JSON.stringify({
+                model: endpoint.model,
+                messages: [
+                  { role: 'system', content: 'You are an SMS optimization engine.' },
+                  { role: 'user', content: prompt }
+                ],
+                temperature: 0.9
+              })
+            }
+          };
+        }
+        return {
+          url: endpoint.baseUrl,
+          options: {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(endpoint.apiKey ? { Authorization: 'Bearer ' + endpoint.apiKey } : {})
+            },
+            body: JSON.stringify({
+              model: endpoint.model,
+              prompt,
+              labels: OUTPUT_LABELS
+            })
+          }
+        };
+      }
+
+      function parseRemoteResponses(payload) {
+        const textCandidates = [
+          payload?.choices?.[0]?.message?.content,
+          payload?.output?.[0]?.content?.[0]?.text,
+          payload?.content,
+          payload?.message,
+          typeof payload === 'string' ? payload : ''
+        ].filter(Boolean);
+
+        for (const candidate of textCandidates) {
+          const parsed = parseResponseText(candidate);
+          if (parsed) return parsed;
+        }
+        if (Array.isArray(payload?.responses)) {
+          return normalizeResponses(payload.responses);
+        }
+        return null;
+      }
+
+      function parseResponseText(text) {
+        if (!text || typeof text !== 'string') return null;
+        const trimmed = text.trim();
+        const direct = tryParseJson(trimmed);
+        if (direct) return direct;
+        const match = trimmed.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+        return match ? tryParseJson(match[0]) : null;
+      }
+
+      function tryParseJson(candidate) {
+        try {
+          const parsed = JSON.parse(candidate);
+          if (Array.isArray(parsed)) return normalizeResponses(parsed);
+          if (Array.isArray(parsed?.responses)) return normalizeResponses(parsed.responses);
+          return null;
+        } catch {
+          return null;
+        }
+      }
+
+      function normalizeResponses(items) {
+        if (!Array.isArray(items) || items.length < 3) return null;
+        return OUTPUT_LABELS.map((label, index) => {
+          const item = items[index] || {};
+          const text = typeof item === 'string' ? item : (item.text || item.message || '');
+          return { label, text: String(text).trim() };
+        });
+      }
+
+      function buildOfflineResponses() {
+        const incoming = state.incomingText.trim();
+        const directive = getCurrentDirective();
+        const toneLead = state.perspective === 'female' ? 'Cute, confident, and in control' : 'Smooth, direct, and in control';
+        const targetLine = state.strategicTarget === 'Meet Up Fast'
+          ? 'push toward a same-day link-up'
+          : state.strategicTarget === 'Screen Out Bots'
+            ? 'pressure-test for authenticity fast'
+            : 'introduce the deposit expectation early';
+        const directiveLine = directive ? ` ${directive.replace(/\s+/g, ' ').trim()}` : '';
+        const compressed = incoming.replace(/\s+/g, ' ').trim();
+        return [
+          `${toneLead} — I like your vibe. ${compressed ? `On what you said: "${compressed}". ` : ''}Let's keep this fun and ${targetLine}. What are you doing later?${directiveLine}`,
+          `${state.vibeScale} energy only. ${compressed ? `You came in with "${compressed}" and I can match that, ` : ''}but I want momentum, not pen pals. Give me something real and let's move this forward.${directiveLine}`,
+          `${compressed ? `If "${compressed}" is your best opener, ` : ''}cut the fluff. ${state.strategicTarget === 'Paywall Deposit' ? 'If you want access, lock in the deposit first.' : state.strategicTarget === 'Screen Out Bots' ? 'Send one real detail so I know you are not wasting my time.' : 'Pick a spot and a time and stop stalling.'}${directiveLine}`
+        ].map((text, index) => ({ label: OUTPUT_LABELS[index], text: text.trim() }));
+      }
+
+      async function runInference() {
+        const input = state.incomingText.trim();
+        if (!input) {
+          showToast('Add incoming traffic before generating.', 'bad');
+          return;
+        }
+        if (state.ledgerCredits < 1) {
+          setTab('premium');
+          showToast('No credits left. Refill the ledger to continue.', 'warn');
+          return;
+        }
+
+        state.ledgerCredits -= 1;
+        state.notifications.processingState = 'Processing';
+        state.notifications.routeStatus = 'Primary Gateway Engaged';
+        state.notifications.failoverArmed = Boolean(state.network.fallbackUrl.trim());
+        state.processingLog = 'Dispatching payload to primary gateway...';
+        persistState(false);
+
+        const routes = ['primary'];
+        if (state.network.fallbackUrl.trim()) {
+          routes.push('fallback');
+        }
+        if (TIERS[state.premiumTier].eliteRouting) {
+          routes.sort((a, b) => (a === 'fallback' ? -1 : 1) - (b === 'fallback' ? -1 : 1));
+        }
+
+        let responses = null;
+        let trace = [];
+
+        for (const route of routes) {
+          const endpoint = buildEndpointConfig(route);
+          if (!endpoint.baseUrl || !endpoint.model) {
+            trace.push(`${endpoint.routeName}: skipped because URL or model is missing.`);
+            continue;
+          }
+
+          try {
+            const request = buildRequest(endpoint);
+            trace.push(`${endpoint.routeName}: sending request to ${request.url}`);
+            markNetworkState(trace.join('\n'), 'Processing', `${endpoint.routeName} Active`);
+            const response = await fetchWithTimeout(request.url, request.options, Number(state.network.requestTimeout));
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+            const payload = await response.json();
+            responses = parseRemoteResponses(payload);
+            if (!responses || responses.some((entry) => !entry.text)) {
+              throw new Error('Parser rejected remote payload');
+            }
+            trace.push(`${endpoint.routeName}: remote model returned a valid 3-response payload.`);
+            state.notifications.routeStatus = `${endpoint.routeName} Success`;
+            break;
+          } catch (error) {
+            trace.push(`${endpoint.routeName}: ${error.name === 'AbortError' ? 'timeout intercepted' : 'connection exception'} (${error.message}).`);
+            state.notifications.routeStatus = `${endpoint.routeName} Failed`;
+          }
+        }
+
+        if (!responses) {
+          responses = buildOfflineResponses();
+          trace.push('Offline synthesis fallback activated to keep the workspace functional client-side.');
+          state.notifications.routeStatus = 'Offline Recovery Route';
+        }
+
+        state.outputs = responses;
+        state.processingLog = trace.join('\n');
+        state.notifications.processingState = 'Complete';
+        persistState(false);
+      }
+
+      async function copyAndLaunch(index) {
+        const item = state.outputs[index];
+        if (!item?.text) return;
+        try {
+          await navigator.clipboard.writeText(item.text);
+        } catch {
+          const temp = document.createElement('textarea');
+          temp.value = item.text;
+          temp.style.position = 'fixed';
+          temp.style.opacity = '0';
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand('copy');
+          temp.remove();
+        }
+        const targetPhone = sanitizePhone(state.network.targetPhone);
+        const url = `sms:${encodeURIComponent(targetPhone)}?&body=${encodeURIComponent(item.text)}`;
+        window.open(url, '_self');
+      }
+
+      function saveProfile() {
+        const name = els.profileName.value.trim();
+        if (!name) {
+          showToast('Name the profile before freezing it.', 'bad');
+          return;
+        }
+        const tier = TIERS[state.premiumTier];
+        const existingIndex = state.profiles.findIndex((profile) => profile.id === name);
+        if (existingIndex === -1 && Number.isFinite(tier.maxProfiles) && state.profiles.length >= tier.maxProfiles) {
+          setTab('premium');
+          showToast('Profile cap hit. Upgrade to save more profiles.', 'warn');
+          return;
+        }
+        const profile = normalizeProfile({
+          id: name,
+          name,
+          perspective: state.perspective,
+          vibeScale: state.vibeScale,
+          strategicTarget: state.strategicTarget,
+          customDirective: getCurrentDirective(),
+          network: {
+            primaryUrl: state.network.primaryUrl,
+            primaryModel: state.network.primaryModel,
+            fallbackUrl: state.network.fallbackUrl,
+            fallbackModel: state.network.fallbackModel,
+            targetPhone: state.network.targetPhone
+          },
+          savedAt: new Date().toISOString()
+        });
+        if (existingIndex >= 0) {
+          state.profiles.splice(existingIndex, 1, profile);
+        } else {
+          state.profiles.unshift(profile);
+        }
+        state.currentProfile = profile.id;
+        persistState(true);
+        showToast(`Profile ${profile.name} frozen.`, 'good');
+      }
+
+      function loadProfile(id) {
+        const profile = state.profiles.find((entry) => entry.id === id);
+        if (!profile) return;
+        state.currentProfile = profile.id;
+        state.perspective = profile.perspective;
+        state.vibeScale = profile.vibeScale;
+        state.strategicTarget = profile.strategicTarget;
+        state.customDirectiveDraft = TIERS[state.premiumTier].allowCustomDirectives ? profile.customDirective : '';
+        state.network.primaryUrl = profile.network.primaryUrl;
+        state.network.primaryModel = profile.network.primaryModel;
+        state.network.fallbackUrl = profile.network.fallbackUrl;
+        state.network.fallbackModel = profile.network.fallbackModel;
+        state.network.targetPhone = profile.network.targetPhone;
+        persistState(false);
+        showToast(`Loaded ${profile.name}.`, 'good');
+      }
+
+      function deleteProfile(id) {
+        if (id === 'standard_default') return;
+        state.profiles = state.profiles.filter((profile) => profile.id !== id);
+        if (state.currentProfile === id) state.currentProfile = 'standard_default';
+        persistState(true);
+        showToast('Profile removed.', 'warn');
+      }
+
+      function resetToDefault() {
+        const base = state.profiles.find((profile) => profile.id === 'standard_default') || defaultState.profiles[0];
+        loadProfile(base.id);
+        els.profileName.value = '';
+      }
+
+      function selectTier(tierId) {
+        if (!TIERS[tierId]) return;
+        state.premiumTier = tierId;
+        if (tierId === 'lite' && state.profiles.length > TIERS.lite.maxProfiles) {
+          state.profiles = state.profiles.slice(0, TIERS.lite.maxProfiles);
+          if (!state.profiles.some((profile) => profile.id === state.currentProfile)) {
+            state.currentProfile = state.profiles[0]?.id || 'standard_default';
+          }
+        }
+        state.notifications.setupLog = `${TIERS[tierId].name} activated via simulated checkout.`;
+        persistState(true);
+        showToast(`${TIERS[tierId].name} unlocked.`, 'good');
+        setTab('matrix');
+      }
+
+      function refillCredits(amount, price) {
+        state.ledgerCredits += amount;
+        state.notifications.setupLog = `Mock payment approved for ${amount} credits at $${price}.`;
+        persistState(true);
+        showToast(`Transaction complete: +${amount} credits.`, 'good');
+        setTab('matrix');
+      }
+
+      function saveSetup() {
+        state.network.primaryUrl = els.primaryUrl.value.trim() || defaultState.network.primaryUrl;
+        state.network.primaryKey = els.primaryKey.value.trim();
+        state.network.primaryModel = els.primaryModel.value.trim() || defaultState.network.primaryModel;
+        state.network.fallbackUrl = els.fallbackUrl.value.trim();
+        state.network.fallbackKey = els.fallbackKey.value.trim();
+        state.network.fallbackModel = els.fallbackModel.value.trim() || defaultState.network.fallbackModel;
+        state.network.targetPhone = sanitizePhone(els.targetPhone.value);
+        state.network.requestTimeout = Math.max(1000, Number(els.requestTimeout.value) || defaultState.network.requestTimeout);
+        state.notifications.failoverArmed = Boolean(state.network.fallbackUrl);
+        state.notifications.setupLog = 'Network settings saved locally.';
+        persistState(true);
+        showToast('Setup saved.', 'good');
+      }
+
+      function exportConfig() {
+        const payload = JSON.stringify(state, null, 2);
+        const blob = new Blob([payload], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `vibeengine-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+        anchor.click();
+        URL.revokeObjectURL(url);
+        state.lastExportAt = new Date().toISOString();
+        state.dirty = false;
+        persistState(false);
+        showToast('Configuration exported.', 'good');
+      }
+
+      function importConfig(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(String(reader.result || '{}'));
+            state = mergeState(defaultState, parsed);
+            persistState(false);
+            showToast('Backup imported successfully.', 'good');
+          } catch {
+            showToast('Import failed. Invalid JSON file.', 'bad');
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function clearWorkspace() {
+        state.incomingText = '';
+        state.outputs = [];
+        state.processingLog = 'Workspace cleared.';
+        state.notifications.processingState = 'Idle';
+        persistState(false);
+      }
+
+      function bindEvents() {
+        els.tabButtons.forEach((button) => button.addEventListener('click', () => setTab(button.dataset.tab)));
+        els.maleToggle.addEventListener('click', () => { state.perspective = 'male'; persistState(true); });
+        els.femaleToggle.addEventListener('click', () => { state.perspective = 'female'; persistState(true); });
+        els.incomingText.addEventListener('input', (event) => { state.incomingText = event.target.value; persistState(true); });
+        els.vibeScale.addEventListener('change', (event) => { state.vibeScale = event.target.value; persistState(true); });
+        els.strategicTarget.addEventListener('change', (event) => { state.strategicTarget = event.target.value; persistState(true); });
+        els.customDirective.addEventListener('input', (event) => { state.customDirectiveDraft = event.target.value; persistState(true); });
+        els.saveProfileBtn.addEventListener('click', saveProfile);
+        els.resetProfilesBtn.addEventListener('click', resetToDefault);
+        els.generateBtn.addEventListener('click', runInference);
+        els.clearBtn.addEventListener('click', clearWorkspace);
+        els.saveSetupBtn.addEventListener('click', saveSetup);
+        els.exportBtn.addEventListener('click', exportConfig);
+        els.importBtn.addEventListener('click', () => els.importFile.click());
+        els.importFile.addEventListener('change', (event) => importConfig(event.target.files?.[0]));
+        els.tierButtons.forEach((button) => button.addEventListener('click', () => selectTier(button.dataset.tier)));
+        els.refillButtons.forEach((button) => button.addEventListener('click', () => refillCredits(Number(button.dataset.credits), button.dataset.price)));
+        els.profilesList.addEventListener('click', (event) => {
+          const target = event.target;
+          if (!(target instanceof HTMLElement)) return;
+          const id = target.dataset.id;
+          const action = target.dataset.action;
+          if (!id || !action) return;
+          if (action === 'load') loadProfile(id);
+          if (action === 'delete') deleteProfile(id);
+        });
+        els.outputsGrid.addEventListener('click', (event) => {
+          const target = event.target;
+          if (!(target instanceof HTMLElement)) return;
+          const index = target.dataset.outputIndex;
+          if (typeof index === 'undefined') return;
+          copyAndLaunch(Number(index));
+        });
+        window.addEventListener('storage', (event) => {
+          if (event.key !== STORAGE_KEY || !event.newValue) return;
+          try {
+            state = mergeState(defaultState, JSON.parse(event.newValue));
+            renderAll();
+            els.storageAlert.textContent = 'Storage registry changed in another tab. Review and export a fresh backup.';
+            els.storageAlert.style.display = 'block';
+          } catch {
+            // ignore invalid external state
+          }
+        });
+      }
+
+      renderAll();
+      bindEvents();
+    })();
+  </script>
+</body>
+</html>
