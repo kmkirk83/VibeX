@@ -911,7 +911,8 @@
             primaryModel: typeof profile?.network?.primaryModel === 'string' ? profile.network.primaryModel : defaultState.network.primaryModel,
             fallbackUrl: typeof profile?.network?.fallbackUrl === 'string' ? profile.network.fallbackUrl : defaultState.network.fallbackUrl,
             fallbackModel: typeof profile?.network?.fallbackModel === 'string' ? profile.network.fallbackModel : defaultState.network.fallbackModel,
-            targetPhone: typeof profile?.network?.targetPhone === 'string' ? profile.network.targetPhone : ''
+            targetPhone: typeof profile?.network?.targetPhone === 'string' ? profile.network.targetPhone : '',
+            requestTimeout: Number.isFinite(Number(profile?.network?.requestTimeout)) ? Math.max(1000, Number(profile.network.requestTimeout)) : defaultState.network.requestTimeout
           },
           savedAt: typeof profile?.savedAt === 'string' ? profile.savedAt : new Date().toISOString()
         };
@@ -946,6 +947,7 @@
             return;
           }
           els.storageAlert.style.display = 'none';
+          showToast.timer = null;
         }, 2800);
       }
 
@@ -1002,7 +1004,7 @@
                 <h4>${escapeHtml(profile.name)}</h4>
                 <div class="profile-meta">
                   <span>${profile.perspective === 'female' ? 'Female / Pink' : 'Male / Indigo'} • ${escapeHtml(profile.vibeScale)} • ${escapeHtml(profile.strategicTarget)}</span>
-                  <span>Primary: ${escapeHtml(profile.network.primaryModel)} • Fallback: ${escapeHtml(profile.network.fallbackModel)}</span>
+                  <span>Primary: ${escapeHtml(profile.network.primaryModel)} • Fallback: ${escapeHtml(profile.network.fallbackModel)} • Timeout: ${profile.network.requestTimeout}ms</span>
                   <span>Saved: ${new Date(profile.savedAt).toLocaleString()}</span>
                 </div>
               </div>
@@ -1314,11 +1316,6 @@
 
         state.ledgerCredits -= 1;
         state.notifications.processingState = 'Processing';
-        state.notifications.routeStatus = 'Primary Gateway Engaged';
-        state.notifications.failoverArmed = Boolean(state.network.fallbackUrl.trim());
-        state.processingLog = 'Dispatching payload to primary gateway...';
-        persistState(false);
-
         const routes = ['primary'];
         if (state.network.fallbackUrl.trim()) {
           routes.push('fallback');
@@ -1326,6 +1323,11 @@
         if (TIERS[state.premiumTier].eliteRouting) {
           routes.sort((a, b) => (a === 'fallback' ? -1 : 1) - (b === 'fallback' ? -1 : 1));
         }
+        const firstRouteLabel = routes[0] === 'fallback' ? 'Failover Gateway Engaged' : 'Primary Gateway Engaged';
+        state.notifications.routeStatus = firstRouteLabel;
+        state.notifications.failoverArmed = Boolean(state.network.fallbackUrl.trim());
+        state.processingLog = `Dispatching payload to ${firstRouteLabel.toLowerCase()}...`;
+        persistState(false);
 
         let responses = null;
         let trace = [];
@@ -1416,7 +1418,8 @@
             primaryModel: state.network.primaryModel,
             fallbackUrl: state.network.fallbackUrl,
             fallbackModel: state.network.fallbackModel,
-            targetPhone: state.network.targetPhone
+            targetPhone: state.network.targetPhone,
+            requestTimeout: state.network.requestTimeout
           },
           savedAt: new Date().toISOString()
         });
@@ -1443,6 +1446,7 @@
         state.network.fallbackUrl = profile.network.fallbackUrl;
         state.network.fallbackModel = profile.network.fallbackModel;
         state.network.targetPhone = profile.network.targetPhone;
+        state.network.requestTimeout = profile.network.requestTimeout;
         persistState(false);
         showToast(`Loaded ${profile.name}.`, 'good');
       }
